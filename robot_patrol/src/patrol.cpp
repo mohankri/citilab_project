@@ -66,6 +66,7 @@ private:
         } else {
             cmd.angular.z = direction_/2;
         }
+        RCLCPP_INFO(this->get_logger(), "Angular %.2f", cmd.angular.z);
         publisher_->publish(cmd);
     }
 
@@ -98,6 +99,7 @@ private:
 
             if (ray.range < OBSTACLE_THRESHOLD) {
                 obstacle_ahead_ = true;
+                RCLCPP_INFO(this->get_logger(), "Obstacle Detected %.2f", ray.range);
                 break;
             }
         }
@@ -106,7 +108,6 @@ private:
         if (obstacle_ahead_) {
             float best_range = -1.0f;
             float best_angle =  0.0f;
-
             for (const auto &ray : front_ranges_) {
                 if (!std::isfinite(ray.range)) 
                     continue;
