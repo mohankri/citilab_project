@@ -48,7 +48,9 @@ private:
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
     float direction_ = 0;
     static constexpr float OBSTACLE_THRESHOLD = 0.35f; // metres
-    static constexpr float HALF_FOV  = M_PI / 18.0f; // 20° cone → ±10°
+    //static constexpr float HALF_FOV  = M_PI / 18.0f; // 20
+    static constexpr float HALF_FOV = M_PI / 12.0f;  //30
+
     bool  obstacle_ahead_ = false;
     
     // Compact struct to hold a filtered ray
@@ -104,7 +106,6 @@ private:
             }
         }
 
-        // --- Step 2: if blocked, find the most open direction in front 180° ---
         if (obstacle_ahead_) {
             float best_range = -1.0f;
             float best_angle =  0.0f;
