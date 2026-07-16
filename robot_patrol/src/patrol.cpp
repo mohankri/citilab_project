@@ -26,19 +26,22 @@ public:
         auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
 
         subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-            "/fastbot_1/scan", 
+            //"/fastbot_1/scan", 
+            "/scan", 
             qos,
             std::bind(&Patrol::lcallback, this, std::placeholders::_1));
 
         publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(
-            "/fastbot_1/cmd_vel", qos);
+            //"/fastbot_1/cmd_vel", 
+            "/cmd_vel", 
+            qos);
         
         auto timer_period = std::chrono::milliseconds(100);
 
         timer_ = this->create_wall_timer(timer_period, 
             std::bind(&Patrol::timer_callback, this));
 
-        RCLCPP_INFO(this->get_logger(), "%s Ready...", node_name_.c_str());
+        //RCLCPP_INFO(this->get_logger(), "%s Ready...", node_name_.c_str());
     }
 
 private:
@@ -47,17 +50,20 @@ private:
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscriber_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
     float direction_ = 0;
-    static constexpr float OBSTACLE_THRESHOLD = 0.35f; // metres
-    //static constexpr float HALF_FOV  = M_PI / 18.0f; // 20
-    static constexpr float HALF_FOV = M_PI / 12.0f;  //30
-
     bool  obstacle_ahead_ = false;
+
+    static constexpr float OBSTACLE_THRESHOLD = 0.35f; // metres
+    static constexpr float HALF_FOV  = M_PI / 18.0f; // 20
+    //static constexpr float HALF_FOV = M_PI; /// 3.0f;  //30
+    //static constexpr float HALF_FOV = M_PI;
+
     
     // Compact struct to hold a filtered ray
     struct Ray {
         float angle;
         float range;
     };
+
     std::vector<Ray> front_ranges_; // front 180° rays, rebuilt each callback
 
     void timer_callback() {
