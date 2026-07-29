@@ -8,19 +8,68 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(custom_interfaces REQUIRED)
+find_package(action_msgs REQUIRED)
+find_package(nav2_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 # Create executable
 add_executable(patrol_exec src/patrol.cpp)
+add_executable(test_service src/test_service.cpp)
+add_executable(direction_service src/direction_service.cpp)
+add_executable(patrol_with_service src/patrol_with_service.cpp)
+add_executable(go_to_pose src/go_to_pose_action.cpp)
 
 # Add dependencies
 ament_target_dependencies(patrol_exec 
 	rclcpp
 	sensor_msgs)
 
+ament_target_dependencies(patrol_with_service 
+	rclcpp
+	sensor_msgs
+	custom_interfaces
+)
+
+ament_target_dependencies(go_to_pose 
+	rclcpp
+	sensor_msgs
+	custom_interfaces
+	action_msgs
+	nav2_msgs
+	rclcpp_action
+	tf2
+	tf2_geometry_msgs
+)
+
+# Add dependencies
+ament_target_dependencies(direction_service 
+	rclcpp
+	sensor_msgs
+	std_srvs
+	custom_interfaces
+)
+
+# Add dependencies
+ament_target_dependencies(test_service 
+	rclcpp
+	sensor_msgs
+	std_srvs
+	custom_interfaces
+)
+
 # Install executables
-install(TARGETS patrol_exec
-  DESTINATION lib/${PROJECT_NAME})
+install(TARGETS
+	patrol_exec
+	patrol_with_service
+	go_to_pose
+	direction_service
+	test_service
+  	DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}/)

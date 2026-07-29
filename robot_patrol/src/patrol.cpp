@@ -26,14 +26,14 @@ public:
         auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
 
         subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-            //"/fastbot_1/scan", 
-            "/scan", 
+            "/fastbot_1/scan", 
+            //"/scan", 
             qos,
             std::bind(&Patrol::lcallback, this, std::placeholders::_1));
 
         publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(
-            //"/fastbot_1/cmd_vel", 
-            "/cmd_vel", 
+            "/fastbot_1/cmd_vel", 
+            //"/cmd_vel", 
             qos);
         
         auto timer_period = std::chrono::milliseconds(100);
