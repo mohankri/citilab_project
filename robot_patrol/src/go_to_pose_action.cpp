@@ -48,6 +48,7 @@ public:
             "/cmd_vel", 
             qos);
 
+        set_initial_pose(0.0, 0.0, 0.0);
     }
 
 private:
@@ -117,19 +118,48 @@ private:
         auto feedback = std::make_shared<GoToPoseAction::Feedback>();
 
         auto result = std::make_shared<GoToPoseAction::Result>();
-#if 0
+#if 1
         auto timer = create_wall_timer(
-            std::chrono::milliseconds(100),  // 10 Hz
+            std::chrono::milliseconds(1000),  // 10 Hz
                 [this, goal_handle, feedback]() {
-                    const auto goal = goal_handle->get_goal();
-                    feedback->distance_left = compute_distance_left(goal);
+                    //const auto goal = goal_handle->get_goal();
+                    feedback->current_pos = this->current_pos_;
                     goal_handle->publish_feedback(feedback);
         });
 
-
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        
         timer->cancel();
 #endif
     }
+
+    void set_initial_pose(double x, double y, double yaw) {
+        geometry_msgs::msg::PoseWithCovarianceStamped initial_pose;
+
+        initial_pose.header.frame_id = "map";
+        initial_pose.header.stamp = get_clock()->now();
+
+        initial_pose.pose.pose.position.x = x;
+        initial_pose.pose.pose.position.y = y;
+
+        tf2::Quaternion q;
+        q.setRPY(0.0, 0.0, yaw);
+
+        initial_pose.pose.pose.orientation = tf2::toMsg(q);
+
+        for (int i = 0; i < 10; ++i) {
+            initial_pose.header.stamp = get_clock()->now();
+           // initial_pose_publisher_->publish(initial_pose);
+
+            RCLCPP_INFO(get_logger(), "Publishing initial pose (%d/10)", i + 1);
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+
+        RCLCPP_INFO(get_logger(), "Initial pose set to x: %.2f, y: %.2f, yaw: %.2f",
+            x, y, yaw);
+    }
+
     const std::string action_name_ = "/go_to_pose";
     bool first_odom_ = true;
     rclcpp_action::Server<GoToPoseAction>::SharedPtr node_;
