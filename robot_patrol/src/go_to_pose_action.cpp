@@ -51,6 +51,12 @@ public:
     publisher_ =
         this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", qos);
 
+    initial_pose_publisher_ =
+        create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
+            "/initialpose", 10);
+
+    set_initial_pose(0.0, 0.0, 0.0);
+
     RCLCPP_INFO(get_logger(), "Service Server Ready");
   }
 
@@ -63,6 +69,33 @@ private:
     current_pos_.x = odom_msg->pose.pose.position.x;
     current_pos_.y = odom_msg->pose.pose.position.y;
     current_pos_.theta = tf2::getYaw(q);
+  }
+
+  void set_initial_pose(double x, double y, double yaw) {
+    geometry_msgs::msg::PoseWithCovarianceStamped initial_pose;
+
+    initial_pose.header.frame_id = "map";
+    initial_pose.header.stamp = get_clock()->now();
+
+    initial_pose.pose.pose.position.x = x;
+    initial_pose.pose.pose.position.y = y;
+
+    tf2::Quaternion q;
+    q.setRPY(0.0, 0.0, yaw);
+
+    initial_pose.pose.pose.orientation = tf2::toMsg(q);
+
+    for (int i = 0; i < 10; ++i) {
+      initial_pose.header.stamp = get_clock()->now();
+      initial_pose_publisher_->publish(initial_pose);
+
+      RCLCPP_INFO(get_logger(), "Publishing initial pose (%d/10)", i + 1);
+
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    RCLCPP_INFO(get_logger(), "Initial pose set to x: %.2f, y: %.2f, yaw: %.2f",
+                x, y, yaw);
   }
 
   rclcpp_action::GoalResponse
