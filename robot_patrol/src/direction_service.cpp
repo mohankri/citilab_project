@@ -40,7 +40,6 @@ private:
 
     const float sectors_width = M_PI / 3.0f;
 
-#if 1
     for (int i = 0; i < static_cast<int>(msg.ranges.size()); i++) {
       float range = msg.ranges[i];
 
@@ -69,44 +68,6 @@ private:
         sector.left_max = std::max(sector.left_max, range);
       }
     }
-#endif
-
-#if 0
-    const float sector_width = M_PI / 3.0f;
-
-    for (std::size_t i = 0; i < msg.ranges.size(); ++i) {
-      const float range = msg.ranges[i];
-
-      if (!std::isfinite(range)) {
-        continue;
-      }
-
-      if (range < msg.range_min || range > msg.range_max) {
-        continue;
-      }
-
-      const float angle =
-          msg.angle_min + static_cast<float>(i) * msg.angle_increment;
-
-      // Use only the front 180 degrees.
-      if (angle < -M_PI_2 || angle > M_PI_2) {
-        continue;
-      }
-
-      if (angle < -M_PI_2 + sector_width) {
-        sector.right = std::max(sector.right, range);
-      } else if (angle < -M_PI_2 + 2.0f * sector_width) {
-        sector.center = std::max(sector.center, range);
-      } else {
-        sector.left = std::max(sector.left, range);
-      }
-    }
-#endif
-
-    RCLCPP_INFO(this->get_logger(), "Min Right %f center %f Left %f",
-                sector.right_min, sector.center_min, sector.left_min);
-    RCLCPP_INFO(this->get_logger(), "Max Right %f Center %f Left %f",
-                sector.right_max, sector.center_max, sector.left_max);
 
     return sector;
   }
@@ -114,17 +75,9 @@ private:
   std::string getDirection(SectorRanges &sector) {
     if (sector.center_min > OBSTACLE_THRESHOLD) {
       return "forward";
-      // return (sector.left_max > sector.right_max) ? "left" : "right";
     } else {
       return (sector.left_max > sector.right_max) ? "left" : "right";
     }
-    /*  if (sector.center_min > OBSTACLE_THRESHOLD) {
-        return "forward";
-      } else if (sector.left_min > OBSTACLE_THRESHOLD) {
-        return "left";
-      } else if (sector.right_min > OBSTACLE_THRESHOLD) {
-        return "right";
-      } */
     return "stop";
   }
 

@@ -29,15 +29,11 @@ public:
     auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
 
     subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-        "/fastbot_1/scan",
-        //"/scan",
-        qos,
+        "/scan", qos,
         std::bind(&patrol_with_service::laser_scan_callback, this,
                   std::placeholders::_1));
     publisher_ =
-        this->create_publisher<geometry_msgs::msg::Twist>("/fastbot_1/cmd_vel",
-                                                          //"/cmd_vel",
-                                                          qos);
+        this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", qos);
 
     client_ = this->create_client<custom_interfaces::srv::GetDirection>(
         service_name_);
@@ -49,8 +45,6 @@ public:
                      "Interrupted while waiting for the service. Exiting.");
         return;
       }
-      // RCLCPP_INFO(this->get_logger(), "Service %s not available, waiting
-      // again...", service_name_.c_str());
     }
 
     auto timer_period = std::chrono::milliseconds(100);
@@ -68,10 +62,11 @@ private:
 
   void send_direction_service_request() {
     if (!last_scan_msg_) {
-      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 2000,
-                           "No laser scan received yet, skipping request");
       return;
     }
+    
+    RCLCPP_INFO(this->get_logger(), "Request Sent");
+
     auto request =
         std::make_shared<custom_interfaces::srv::GetDirection::Request>();
 
@@ -83,18 +78,18 @@ private:
         request, std::bind(&patrol_with_service::direction_response_callback,
                            this, std::placeholders::_1));
 
-    RCLCPP_INFO(this->get_logger(), "Request Sent");
   }
 
   void direction_response_callback(
       rclcpp::Client<custom_interfaces::srv::GetDirection>::SharedFuture
           future) {
+    
+    RCLCPP_INFO(this->get_logger(), "Request Sent");
+
     auto response = future.get();
-#if 1
+
     geometry_msgs::msg::Twist cmd;
     cmd.linear.x = 0.1f;
-
-    RCLCPP_INFO(this->get_logger(), "Move %s", response->direction.c_str());
 
     if (response->direction == "forward") {
       cmd.angular.z = 0.0f;
@@ -104,7 +99,6 @@ private:
       cmd.angular.z = -0.5f;
     }
     publisher_->publish(cmd);
-#endif
   }
 
   rclcpp::Client<custom_interfaces::srv::GetDirection>::SharedPtr client_;
