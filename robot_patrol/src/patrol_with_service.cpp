@@ -29,11 +29,13 @@ public:
     auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
 
     subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-        "/scan", qos,
+        //"/fastbot_1/scan", qos,
+         "/scan", qos, // Real Robot
         std::bind(&patrol_with_service::laser_scan_callback, this,
                   std::placeholders::_1));
-    publisher_ =
-        this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", qos);
+    publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(
+       // "/fastbot_1/cmd_vel", qos);
+        "/cmd_vel", qos); // Real Robot
 
     client_ = this->create_client<custom_interfaces::srv::GetDirection>(
         service_name_);
@@ -64,7 +66,7 @@ private:
     if (!last_scan_msg_) {
       return;
     }
-    
+
     RCLCPP_INFO(this->get_logger(), "Request Sent");
 
     auto request =
@@ -77,19 +79,21 @@ private:
     client_->async_send_request(
         request, std::bind(&patrol_with_service::direction_response_callback,
                            this, std::placeholders::_1));
-
   }
 
   void direction_response_callback(
       rclcpp::Client<custom_interfaces::srv::GetDirection>::SharedFuture
           future) {
-    
+
     RCLCPP_INFO(this->get_logger(), "Request Sent");
 
     auto response = future.get();
 
     geometry_msgs::msg::Twist cmd;
     cmd.linear.x = 0.1f;
+
+    RCLCPP_INFO(this->get_logger(), "Move to the %s",
+                response->direction.c_str());
 
     if (response->direction == "forward") {
       cmd.angular.z = 0.0f;

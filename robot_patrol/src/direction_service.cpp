@@ -69,6 +69,11 @@ private:
       }
     }
 
+    RCLCPP_INFO(this->get_logger(), "Min left %0.02f center %0.2f right %0.2f",
+                sector.left_min, sector.center_min, sector.right_min);
+    RCLCPP_INFO(this->get_logger(), "Max left %0.02f center %0.2f right %0.2f",
+                sector.left_max, sector.center_max, sector.right_max);
+
     return sector;
   }
 
@@ -98,7 +103,9 @@ private:
     response->direction = getDirection(sector);
   }
 
-  static constexpr float OBSTACLE_THRESHOLD = 0.35f; // meters
+  //  static constexpr float OBSTACLE_THRESHOLD = 0.35f; // meters
+  static constexpr float OBSTACLE_THRESHOLD = 0.45f; // meters
+
   const std::string service_name_ = "/direction_service";
   rclcpp::Service<custom_interfaces::srv::GetDirection>::SharedPtr service_;
 };
