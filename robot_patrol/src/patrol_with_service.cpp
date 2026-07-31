@@ -29,15 +29,11 @@ public:
     auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
 
     subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-        "/fastbot_1/scan",
-        //"/scan",
-        qos,
+        "/fastbot_1/scan", qos,
         std::bind(&patrol_with_service::laser_scan_callback, this,
                   std::placeholders::_1));
-    publisher_ =
-        this->create_publisher<geometry_msgs::msg::Twist>("/fastbot_1/cmd_vel",
-                                                          //"/cmd_vel",
-                                                          qos);
+    publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(
+        "/fastbot_1/cmd_vel", qos);
 
     client_ = this->create_client<custom_interfaces::srv::GetDirection>(
         service_name_);
@@ -111,7 +107,7 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscriber_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
 
-  sensor_msgs::msg::LaserScan::SharedPtr last_scan_msg_;
+  sensor_msgs::msg::LaserScan::SharedPtr last_scan_msg_ = nullptr;
   rclcpp::TimerBase::SharedPtr timer_;
 
   const std::string service_name_ = "/direction_service";

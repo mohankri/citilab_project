@@ -33,8 +33,8 @@ public:
         auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
 
         subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-            "/fastbot_1/scan", 
-            //"/scan",
+            //"/fastbot_1/scan", 
+            "/scan",
             qos,
             std::bind(&test_service::laser_scan_callback,
                 this,
