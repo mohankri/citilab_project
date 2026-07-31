@@ -55,19 +55,6 @@ private:
     current_pos_.x = odom_msg->pose.pose.position.x;
     current_pos_.y = odom_msg->pose.pose.position.y;
     current_pos_.theta = tf2::getYaw(q);
-#if 0
-    if (first_odom_) {
-      last_x_ = current_x_;
-      last_y_ = current_y_;
-      last_yaw_ = current_yaw_;
-      first_odom_ = false;
-      return;
-    }
-
-    last_x_ = current_x_;
-    last_y_ = current_y_;
-    last_yaw_ = current_yaw_;
-#endif
   }
 
   rclcpp_action::GoalResponse
@@ -194,10 +181,6 @@ private:
   const double orientation_tolerance_ = (10 * M_PI) / 180; // 10 deg
 
   rclcpp_action::Server<GoToPoseAction>::SharedPtr node_;
-  // double current_x_ = 0.0, current_y_ = 0.0, current_yaw_ = 0.0;
-  // double last_x_ = 0.0, last_y_ = 0.0, last_yaw_ = 0.0;
-  // rclcpp::Publisher<geometry_msgs::msg::Pose2D>::SharedPtr current_pos_,
-  // desired_pos_;
   geometry_msgs::msg::Pose2D desired_pos_, current_pos_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
   rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr
