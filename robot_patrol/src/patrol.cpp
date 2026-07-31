@@ -52,10 +52,12 @@ private:
     float direction_ = 0;
     bool  obstacle_ahead_ = false;
 
-    static constexpr float OBSTACLE_THRESHOLD = 0.35f; // metres
-    static constexpr float HALF_FOV  = M_PI / 18.0f; // 20
+    //static constexpr float OBSTACLE_THRESHOLD = 0.35f; // metres
+    static constexpr float OBSTACLE_THRESHOLD = 0.55f; // metres
+
+    //static constexpr float HALF_FOV  = M_PI / 18.0f; // 20
     //static constexpr float HALF_FOV = M_PI; /// 3.0f;  //30
-    //static constexpr float HALF_FOV = M_PI;
+    static constexpr float HALF_FOV = M_PI;
 
     
     // Compact struct to hold a filtered ray
