@@ -22,20 +22,18 @@ using namespace std::chrono_literals;
 
 class patrol_with_service : public rclcpp::Node {
 public:
-  patrol_with_service() : Node("Patrol_Service") {
-
-    RCLCPP_INFO(this->get_logger(), "Client Ready");
+  patrol_with_service() : Node("patrol_with_service") {
 
     auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
 
     subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-        //"/fastbot_1/scan", qos,
-         "/scan", qos, // Real Robot
+        "/fastbot_1/scan", qos,
+        //"/scan", qos, // Real Robot
         std::bind(&patrol_with_service::laser_scan_callback, this,
                   std::placeholders::_1));
     publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(
-       // "/fastbot_1/cmd_vel", qos);
-        "/cmd_vel", qos); // Real Robot
+        "/fastbot_1/cmd_vel", qos);
+    //"/cmd_vel", qos); // Real Robot
 
     client_ = this->create_client<custom_interfaces::srv::GetDirection>(
         service_name_);
@@ -53,6 +51,8 @@ public:
 
     timer_ = this->create_wall_timer(
         timer_period, std::bind(&patrol_with_service::timer_callback, this));
+
+    RCLCPP_INFO(this->get_logger(), "Client Ready");
   }
 
 private:
@@ -85,15 +85,12 @@ private:
       rclcpp::Client<custom_interfaces::srv::GetDirection>::SharedFuture
           future) {
 
-    RCLCPP_INFO(this->get_logger(), "Request Sent");
+    RCLCPP_INFO(this->get_logger(), "Response Received");
 
     auto response = future.get();
 
     geometry_msgs::msg::Twist cmd;
     cmd.linear.x = 0.1f;
-
-    RCLCPP_INFO(this->get_logger(), "Move to the %s",
-                response->direction.c_str());
 
     if (response->direction == "forward") {
       cmd.angular.z = 0.0f;

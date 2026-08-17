@@ -19,7 +19,7 @@ struct SectorRanges {
 
 class DirectionService : public rclcpp::Node {
 public:
-  DirectionService() : Node("DirectionService") {
+  DirectionService() : Node("direction_service") {
 
     service_ = this->create_service<custom_interfaces::srv::GetDirection>(
         service_name_,
@@ -69,21 +69,27 @@ private:
       }
     }
 
+#if 0
     RCLCPP_INFO(this->get_logger(), "Min left %0.02f center %0.2f right %0.2f",
                 sector.left_min, sector.center_min, sector.right_min);
     RCLCPP_INFO(this->get_logger(), "Max left %0.02f center %0.2f right %0.2f",
                 sector.left_max, sector.center_max, sector.right_max);
-
+#endif
     return sector;
   }
 
   std::string getDirection(SectorRanges &sector) {
+    RCLCPP_INFO(this->get_logger(), "Request Received");
+    std::string response = "stop";
+
     if (sector.center_min > OBSTACLE_THRESHOLD) {
-      return "forward";
+      response = "forward";
     } else {
-      return (sector.left_max > sector.right_max) ? "left" : "right";
+      response = (sector.left_max > sector.right_max) ? "left" : "right";
     }
-    return "stop";
+    RCLCPP_INFO(this->get_logger(), "Request Completed");
+
+    return response;
   }
 
   void handle_direction_service(
@@ -92,13 +98,13 @@ private:
       std::shared_ptr<custom_interfaces::srv::GetDirection::Response>
           response) {
 
-    RCLCPP_INFO(this->get_logger(), "Request Received");
+    //RCLCPP_INFO(this->get_logger(), "Request Received");
 
     const sensor_msgs::msg::LaserScan &msg = request->laser_data;
 
     SectorRanges sector = getSectorRanges(msg);
 
-    RCLCPP_INFO(this->get_logger(), "Request Completed");
+    //RCLCPP_INFO(this->get_logger(), "Request Completed");
 
     response->direction = getDirection(sector);
   }

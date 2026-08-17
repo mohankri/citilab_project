@@ -1,10 +1,6 @@
 
 //#include "geometry_msgs/msg/detail/twist__struct.hpp"
 #include "rclcpp/create_subscription.hpp"
-#include <algorithm>
-#include <cmath>
-#include <cstdint>
-#include <geometry_msgs/msg/twist.hpp>
 #include "rclcpp/executors.hpp"
 #include "rclcpp/logger.hpp"
 #include "rclcpp/logging.hpp"
@@ -13,102 +9,104 @@
 #include "rclcpp/timer.hpp"
 #include "sensor_msgs/msg/detail/laser_scan__struct.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <cstdint>
 #include <custom_interfaces/srv/get_direction.hpp>
+#include <geometry_msgs/msg/twist.hpp>
 #include <iterator>
 #include <limits>
 #include <map>
 #include <string>
-#include <algorithm>
-#include <chrono>
 
 using namespace std::chrono_literals;
 
-class test_service : public rclcpp::Node
-{
+class test_service : public rclcpp::Node {
 public:
-    test_service() : Node("test_service") {
-        
-        RCLCPP_INFO(this->get_logger(), "Test Service Started");
-        
-        auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
+  test_service() : Node("test_service") {
 
-        subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-            "/fastbot_1/scan", 
-            //"/scan",
-            qos,
-            std::bind(&test_service::laser_scan_callback,
-                this,
-                std::placeholders::_1));
-    
-        client_ = this->create_client<custom_interfaces::srv::GetDirection>(service_name_);
+    auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
 
-        // Wait for the service to be available (checks every second)
-        while (!client_->wait_for_service(1s)) {
-            if (!rclcpp::ok()) {
-                RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
-                return;
-            }
-            //RCLCPP_INFO(this->get_logger(), "Service %s not available, waiting again...", service_name_.c_str());
-        }
+    subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+        "/fastbot_1/scan",
+        //"/scan",
+        qos,
+        std::bind(&test_service::laser_scan_callback, this,
+                  std::placeholders::_1));
 
-        auto timer_period = std::chrono::milliseconds(100);
+    client_ = this->create_client<custom_interfaces::srv::GetDirection>(
+        service_name_);
 
-        timer_ = this->create_wall_timer(timer_period, 
-            std::bind(&test_service::timer_callback, this));
+    // Wait for the service to be available (checks every second)
+    while (!client_->wait_for_service(1s)) {
+      if (!rclcpp::ok()) {
+        RCLCPP_ERROR(this->get_logger(),
+                     "Interrupted while waiting for the service. Exiting.");
+        return;
+      }
+      // RCLCPP_INFO(this->get_logger(), "Service %s not available, waiting
+      // again...", service_name_.c_str());
     }
 
- 
+    auto timer_period = std::chrono::milliseconds(100);
+
+    timer_ = this->create_wall_timer(
+        timer_period, std::bind(&test_service::timer_callback, this));
+
+    RCLCPP_INFO(this->get_logger(), "Client Ready");
+  }
+
 private:
-    void timer_callback() {
+  void timer_callback() {
 
-        send_direction_service_request();
+    send_direction_service_request();
 
-        //RCLCPP_INFO(this->get_logger(), "Angular %.2f", cmd.angular.z);
-        //publisher_->publish(cmd);
-    }
+    // RCLCPP_INFO(this->get_logger(), "Angular %.2f", cmd.angular.z);
+    // publisher_->publish(cmd);
+  }
 
-    void laser_scan_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg)
-    {
-        last_scan_msg_ = msg;
-    }
+  void laser_scan_callback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
+    last_scan_msg_ = msg;
+  }
 
-    void send_direction_service_request() 
-    {
-        auto request = std::make_shared<custom_interfaces::srv::GetDirection::Request>();
-        
-        request->laser_data = *last_scan_msg_;
+  void send_direction_service_request() {
+    auto request =
+        std::make_shared<custom_interfaces::srv::GetDirection::Request>();
 
-        // Callback fires when the response arrives — no blocking, no second executor
-        client_->async_send_request(request,
-            std::bind(&test_service::direction_response_callback,
-                this,
-                std::placeholders::_1));
-    }
+    request->laser_data = *last_scan_msg_;
 
-    void direction_response_callback(
-        rclcpp::Client<custom_interfaces::srv::GetDirection>::SharedFuture future)
-    {
-        auto response = future.get();
-        RCLCPP_INFO(this->get_logger(), "Direction: %s", response->direction.c_str());
-    }
+    // Callback fires when the response arrives — no blocking, no second
+    // executor
+    client_->async_send_request(
+        request, std::bind(&test_service::direction_response_callback, this,
+                           std::placeholders::_1));
+    RCLCPP_INFO(this->get_logger(), "Request Sent");
+  }
 
-    rclcpp::Client<custom_interfaces::srv::GetDirection>::SharedPtr client_;
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscriber_;
-    sensor_msgs::msg::LaserScan::SharedPtr last_scan_msg_;
-    rclcpp::TimerBase::SharedPtr timer_;
+  void direction_response_callback(
+      rclcpp::Client<custom_interfaces::srv::GetDirection>::SharedFuture
+          future) {
+    auto response = future.get();
+    RCLCPP_INFO(this->get_logger(), "Response Received");
+  }
 
-    const std::string service_name_ = "/direction_service";
+  rclcpp::Client<custom_interfaces::srv::GetDirection>::SharedPtr client_;
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscriber_;
+  sensor_msgs::msg::LaserScan::SharedPtr last_scan_msg_;
+  rclcpp::TimerBase::SharedPtr timer_;
+
+  const std::string service_name_ = "/direction_service";
 };
 
-int main(int argc, char **argv)
-{
-    rclcpp::init(argc, argv);
-    
-    auto node_ = std::make_shared<test_service>();
-    
-    rclcpp::spin(node_);
+int main(int argc, char **argv) {
+  rclcpp::init(argc, argv);
 
-    rclcpp::shutdown();
+  auto node_ = std::make_shared<test_service>();
 
-    return 0;
+  rclcpp::spin(node_);
+
+  rclcpp::shutdown();
+
+  return 0;
 }
