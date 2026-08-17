@@ -22,6 +22,8 @@ public:
   Patrol(const std::string &node_name = "patrol_node")
       : Node("patrol_node"), node_name_(node_name) {
 
+    auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
+
     subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
         //"/fastbot_1/scan",
         "/scan", qos,
@@ -30,9 +32,6 @@ public:
     publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(
         //"/fastbot_1/cmd_vel",
         "/cmd_vel", qos);
-
-    auto timer_period = std::chrono::milliseconds(100);
-    auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
 
     auto timer_period = std::chrono::milliseconds(100);
 
