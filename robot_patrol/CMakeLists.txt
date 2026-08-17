@@ -22,7 +22,7 @@ add_executable(patrol_exec src/patrol.cpp)
 add_executable(test_service src/test_service.cpp)
 add_executable(direction_service src/direction_service.cpp)
 add_executable(patrol_with_service src/patrol_with_service.cpp)
-add_executable(go_to_pose src/go_to_pose_action.cpp)
+#add_executable(go_to_pose src/go_to_pose_action.cpp)
 
 # Add dependencies
 ament_target_dependencies(patrol_exec 
@@ -35,16 +35,16 @@ ament_target_dependencies(patrol_with_service
 	custom_interfaces
 )
 
-ament_target_dependencies(go_to_pose 
-	rclcpp
-	sensor_msgs
-	custom_interfaces
-	action_msgs
-	nav2_msgs
-	rclcpp_action
-	tf2
-	tf2_geometry_msgs
-)
+#ament_target_dependencies(go_to_pose 
+#	rclcpp
+#	sensor_msgs
+#	custom_interfaces
+#	action_msgs
+#	nav2_msgs
+#	rclcpp_action
+#	tf2
+#	tf2_geometry_msgs
+#)
 
 # Add dependencies
 ament_target_dependencies(direction_service 
@@ -63,15 +63,14 @@ ament_target_dependencies(test_service
 )
 
 # Install executables
-install(TARGETS
+install(TARGETS 
 	patrol_exec
 	patrol_with_service
-	go_to_pose
 	direction_service
 	test_service
   	DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY launch
+install(DIRECTORY launch rviz
   DESTINATION share/${PROJECT_NAME}/)
 
 if(BUILD_TESTING)
