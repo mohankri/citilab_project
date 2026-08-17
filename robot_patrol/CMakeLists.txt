@@ -63,15 +63,11 @@ ament_target_dependencies(test_service
 )
 
 # Install executables
-install(TARGETS
+install(TARGETS 
 	patrol_exec
-	patrol_with_service
-	go_to_pose
-	direction_service
-	test_service
   	DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY launch
+install(DIRECTORY launch rviz
   DESTINATION share/${PROJECT_NAME}/)
 
 if(BUILD_TESTING)
