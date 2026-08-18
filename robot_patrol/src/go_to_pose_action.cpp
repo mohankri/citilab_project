@@ -83,15 +83,11 @@ private:
     tf2::Quaternion q;
     q.setRPY(0.0, 0.0, yaw);
 
-<<<<<<< HEAD
-    initial_pose.pose.pose.orientation = tf2::toMsg(q);
-=======
     // initial_pose.pose.pose.orientation = tf2::toMsg(q);
     initial_pose.pose.pose.orientation.x = q.x();
     initial_pose.pose.pose.orientation.y = q.y();
     initial_pose.pose.pose.orientation.z = q.z();
     initial_pose.pose.pose.orientation.w = q.w();
->>>>>>> ba4fd65 (initial commit)
 
     for (int i = 0; i < 10; ++i) {
       initial_pose.header.stamp = get_clock()->now();
