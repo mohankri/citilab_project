@@ -1,4 +1,3 @@
-
 #include "rclcpp/logging.hpp"
 #include <algorithm>
 #include <cmath>
@@ -84,10 +83,24 @@ private:
 
     if (sector.center_min > OBSTACLE_THRESHOLD) {
       response = "forward";
+      // RCLCPP_INFO(this->get_logger(),
+      //             "Forward Obstacle %f sector.center_min %f ",
+      //             OBSTACLE_THRESHOLD, sector.center_min);
+
+    } else if (sector.left_min > OBSTACLE_THRESHOLD &&
+               sector.left_max > sector.right_max) {
+      response = "left";
+    } else if (sector.right_min > OBSTACLE_THRESHOLD &&
+               sector.right_max > sector.left_min) {
+      response = "right";
     } else {
       response = (sector.left_max > sector.right_max) ? "left" : "right";
+      // RCLCPP_INFO(this->get_logger(), "%s Obstacle %f sector.center_min %f ",
+      //           response.c_str(), OBSTACLE_THRESHOLD, sector.center_min);
     }
-    RCLCPP_INFO(this->get_logger(), "Request Completed");
+
+    // RCLCPP_INFO(this->get_logger(), "Request Completed %s",
+    // response.c_str());
 
     return response;
   }
@@ -98,19 +111,19 @@ private:
       std::shared_ptr<custom_interfaces::srv::GetDirection::Response>
           response) {
 
-    //RCLCPP_INFO(this->get_logger(), "Request Received");
+    // RCLCPP_INFO(this->get_logger(), "Request Received");
 
     const sensor_msgs::msg::LaserScan &msg = request->laser_data;
 
     SectorRanges sector = getSectorRanges(msg);
 
-    //RCLCPP_INFO(this->get_logger(), "Request Completed");
+    // RCLCPP_INFO(this->get_logger(), "Request Completed");
 
     response->direction = getDirection(sector);
   }
 
-  //  static constexpr float OBSTACLE_THRESHOLD = 0.35f; // meters
-  static constexpr float OBSTACLE_THRESHOLD = 0.45f; // meters
+  // static constexpr float OBSTACLE_THRESHOLD = 0.35f; // meters
+  static constexpr float OBSTACLE_THRESHOLD = 0.55f; // meters
 
   const std::string service_name_ = "/direction_service";
   rclcpp::Service<custom_interfaces::srv::GetDirection>::SharedPtr service_;
