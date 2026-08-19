@@ -50,20 +50,12 @@ private:
   float direction_ = 0;
   bool obstacle_ahead_ = false;
 
-  // static constexpr float OBSTACLE_THRESHOLD = 0.35f; // metres
-  static constexpr float OBSTACLE_THRESHOLD = 0.55f; // metres
+  static constexpr float OBSTACLE_THRESHOLD = 0.35f; // metres
+  // static constexpr float OBSTACLE_THRESHOLD = 0.55f; // metres
 
   // static constexpr float HALF_FOV  = M_PI / 18.0f; // 20
   // static constexpr float HALF_FOV = M_PI; /// 3.0f;  //30
   static constexpr float HALF_FOV = M_PI;
-
-  // Compact struct to hold a filtered ray
-  struct Ray {
-    float angle;
-    float range;
-  };
-
-  std::vector<Ray> front_ranges_; // front 180° rays, rebuilt each callback
 
   void timer_callback() {
     geometry_msgs::msg::Twist cmd;
@@ -73,7 +65,7 @@ private:
     } else {
       cmd.angular.z = direction_ / 2;
     }
-    RCLCPP_INFO(this->get_logger(), "Angular %.2f", cmd.angular.z);
+    // RCLCPP_INFO(this->get_logger(), "Angular %.2f", cmd.angular.z);
     publisher_->publish(cmd);
   }
 
@@ -82,50 +74,37 @@ private:
   */
   void lcallback(const sensor_msgs::msg::LaserScan::SharedPtr msg) {
     obstacle_ahead_ = false;
-    front_ranges_.clear();
 
-    // --- Capture only the front 180° rays (−π/2 to +π/2) ---
+    float center_min = std::numeric_limits<float>::infinity();
+    float center_max = 0.0f;
+
     for (int i = 0; i < static_cast<int>(msg->ranges.size()); i++) {
-      float angle =
-          msg->angle_min + static_cast<float>(i) * msg->angle_increment;
+      float range = msg->ranges[i];
 
-      // Discard anything outside the front hemisphere
+      if (std::isnan(range) || std::isinf(range)) {
+        continue;
+      }
+
+      if (range < msg->range_min || range > msg->range_max) {
+        continue;
+      }
+
+      float angle =
+          msg->angle_min + static_cast<float>(i * msg->angle_increment);
+
+      // angle = angle - msg.angle_min;  // always starts at 0
       if (angle < -M_PI_2 || angle > M_PI_2)
         continue;
 
-      front_ranges_.push_back({angle, msg->ranges[i]});
-    }
-
-    // --- Step 1: check the ±15° forward cone for obstacles ---
-    for (const auto &ray : front_ranges_) {
-      if (!std::isfinite(ray.range)) {
-        continue;
-      }
-
-      if (std::abs(ray.angle) > HALF_FOV)
-        continue;
-
-      if (ray.range < OBSTACLE_THRESHOLD) {
-        obstacle_ahead_ = true;
-        RCLCPP_INFO(this->get_logger(), "Obstacle Detected %.2f", ray.range);
-        break;
+      if (angle > -M_PI / 10.0 && angle < M_PI / 10.0) {
+        center_min = std::min(center_min, range);
+        center_max = std::max(center_max, range);
       }
     }
 
-    if (obstacle_ahead_) {
-      float best_range = -1.0f;
-      float best_angle = 0.0f;
-      for (const auto &ray : front_ranges_) {
-        if (!std::isfinite(ray.range))
-          continue;
-
-        if (ray.range > best_range) {
-          best_range = ray.range;
-          best_angle = ray.angle;
-        }
-      }
-
-      direction_ = best_angle;
+    if (center_min < OBSTACLE_THRESHOLD) {
+      obstacle_ahead_ = true;
+      direction_ = -0.80f;
     }
   }
 };
