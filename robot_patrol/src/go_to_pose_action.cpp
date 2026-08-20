@@ -16,7 +16,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "tf2/LinearMath/Quaternion.h"
-#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+//#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include <tf2/utils.h>
 
 class GoToPose : public rclcpp::Node {
@@ -83,7 +83,11 @@ private:
     tf2::Quaternion q;
     q.setRPY(0.0, 0.0, yaw);
 
-    initial_pose.pose.pose.orientation = tf2::toMsg(q);
+    // initial_pose.pose.pose.orientation = tf2::toMsg(q);
+    initial_pose.pose.pose.orientation.x = q.x();
+    initial_pose.pose.pose.orientation.y = q.y();
+    initial_pose.pose.pose.orientation.z = q.z();
+    initial_pose.pose.pose.orientation.w = q.w();
 
     for (int i = 0; i < 10; ++i) {
       initial_pose.header.stamp = get_clock()->now();
