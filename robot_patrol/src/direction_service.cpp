@@ -1,4 +1,3 @@
-
 #include "rclcpp/logging.hpp"
 #include <algorithm>
 #include <cmath>
