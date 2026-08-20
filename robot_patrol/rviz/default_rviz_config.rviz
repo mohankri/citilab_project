@@ -10,11 +10,12 @@ Panels:
         - /Grid1/Offset1
         - /Axes1
         - /RobotModel1
+        - /RobotModel1/Status1
         - /LaserScan1
         - /LaserScan1/Topic1
         - /Odometry1
         - /Odometry1/Shape1
-      Splitter Ratio: 0.5
+      Splitter Ratio: 0.6470588445663452
     Tree Height: 548
   - Class: rviz_common/Selection
     Name: Selection
@@ -80,6 +81,30 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        fastbot_1_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fastbot_1_camera:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        fastbot_1_lidar:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fastbot_1_wheel_left:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        fastbot_1_wheel_right:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
       Mass Properties:
         Inertia: false
         Mass: false
@@ -111,7 +136,16 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        {}
+        fastbot_1_odom:
+          fastbot_1_base_link:
+            fastbot_1_camera:
+              {}
+            fastbot_1_lidar:
+              {}
+            fastbot_1_wheel_left:
+              {}
+            fastbot_1_wheel_right:
+              {}
       Update Interval: 0
       Value: true
     - Alpha: 1
@@ -144,7 +178,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /scan
+        Value: /fastbot_1/scan
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
@@ -185,7 +219,7 @@ Visualization Manager:
         Filter size: 10
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /odom
+        Value: /fastbot_1/odom
       Value: true
   Enabled: true
   Global Options:
