@@ -50,7 +50,7 @@ private:
   float direction_ = 0;
   bool obstacle_ahead_ = false;
 
-  static constexpr float OBSTACLE_THRESHOLD = 0.35f; // metres
+  static constexpr float OBSTACLE_THRESHOLD = 0.30f; // metres
   // static constexpr float OBSTACLE_THRESHOLD = 0.55f; // metres
 
   // static constexpr float HALF_FOV  = M_PI / 18.0f; // 20
@@ -102,7 +102,7 @@ private:
       }
     }
 
-    if (center_min < OBSTACLE_THRESHOLD) {
+    if (center_min <= OBSTACLE_THRESHOLD) {
       obstacle_ahead_ = true;
       direction_ = -0.80f;
     }
