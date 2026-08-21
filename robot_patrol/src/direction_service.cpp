@@ -1,7 +1,7 @@
 #include "rclcpp/logging.hpp"
+#include "robot_patrol/srv/get_direction.hpp"
 #include <algorithm>
 #include <cmath>
-#include <custom_interfaces/srv/get_direction.hpp>
 #include <limits>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
@@ -20,7 +20,7 @@ class DirectionService : public rclcpp::Node {
 public:
   DirectionService() : Node("direction_service") {
 
-    service_ = this->create_service<custom_interfaces::srv::GetDirection>(
+    service_ = this->create_service<robot_patrol::srv::GetDirection>(
         service_name_,
         std::bind(&DirectionService::handle_direction_service, this,
                   std::placeholders::_1, std::placeholders::_2));
@@ -106,10 +106,8 @@ private:
   }
 
   void handle_direction_service(
-      const std::shared_ptr<custom_interfaces::srv::GetDirection::Request>
-          request,
-      std::shared_ptr<custom_interfaces::srv::GetDirection::Response>
-          response) {
+      const std::shared_ptr<robot_patrol::srv::GetDirection::Request> request,
+      std::shared_ptr<robot_patrol::srv::GetDirection::Response> response) {
 
     // RCLCPP_INFO(this->get_logger(), "Request Received");
 
@@ -123,10 +121,10 @@ private:
   }
 
   // static constexpr float OBSTACLE_THRESHOLD = 0.35f; // meters
-  static constexpr float OBSTACLE_THRESHOLD = 0.55f; // meters
+  static constexpr float OBSTACLE_THRESHOLD = 0.30f; // meters
 
   const std::string service_name_ = "/direction_service";
-  rclcpp::Service<custom_interfaces::srv::GetDirection>::SharedPtr service_;
+  rclcpp::Service<robot_patrol::srv::GetDirection>::SharedPtr service_;
 };
 
 int main(int argc, char **argv) {

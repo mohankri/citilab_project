@@ -8,20 +8,20 @@
 #include <thread>
 
 #include "action_msgs/msg/goal_status.hpp"
-#include "custom_interfaces/action/go_to_pose.hpp"
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "nav2_msgs/action/navigate_to_pose.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "rclcpp/node_options.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
+#include "robot_patrol/action/go_to_pose.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 //#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include <tf2/utils.h>
 
 class GoToPose : public rclcpp::Node {
 public:
-  using GoToPoseAction = custom_interfaces::action::GoToPose;
+  using GoToPoseAction = robot_patrol::action::GoToPose;
   using GoalHandle = rclcpp_action::ServerGoalHandle<GoToPoseAction>;
   using GoalHandleGoToPose = rclcpp_action::ServerGoalHandle<GoToPoseAction>;
   using NavigateToPose = nav2_msgs::action::NavigateToPose;
@@ -37,27 +37,27 @@ public:
         std::bind(&GoToPose::handle_cancel, this, _1),
         std::bind(&GoToPose::handle_accepted, this, _1));
 
-#if 0
+#if 1
     odom_sub_ = create_subscription<nav_msgs::msg::Odometry>(
         "/fastbot_1/odom", 10, std::bind(&GoToPose::odom_callback, this, _1));
 
     publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(
         "/fastbot_1/cmd_vel", qos);
 #endif
-
+#if 0
     odom_sub_ = create_subscription<nav_msgs::msg::Odometry>(
         "/odom", 10, std::bind(&GoToPose::odom_callback, this, _1));
 
     publisher_ =
         this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", qos);
-
+#endif
     initial_pose_publisher_ =
         create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
             "/initialpose", 10);
 
     set_initial_pose(0.0, 0.0, 0.0);
 
-    RCLCPP_INFO(get_logger(), "Service Server Ready");
+    RCLCPP_INFO(get_logger(), "Action Server Ready");
   }
 
 private:

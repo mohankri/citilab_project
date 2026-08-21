@@ -11,11 +11,20 @@ find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
-find_package(custom_interfaces REQUIRED)
 find_package(action_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(action_msgs REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+	"srv/GetDirection.srv"
+	"action/GoToPose.action"
+     DEPENDENCIES sensor_msgs std_msgs geometry_msgs
+)
+
+rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} rosidl_typesupport_cpp)
 
 # Create executable
 add_executable(patrol_exec src/patrol.cpp)
@@ -32,13 +41,12 @@ ament_target_dependencies(patrol_exec
 ament_target_dependencies(patrol_with_service 
 	rclcpp
 	sensor_msgs
-	custom_interfaces
 )
+target_link_libraries(patrol_with_service "${cpp_typesupport_target}")
 
 ament_target_dependencies(go_to_pose 
 	rclcpp
 	sensor_msgs
-	custom_interfaces
 	action_msgs
 	nav2_msgs
 	rclcpp_action
@@ -49,18 +57,22 @@ ament_target_dependencies(go_to_pose
 # Add dependencies
 ament_target_dependencies(direction_service 
 	rclcpp
+	rclcpp_action
 	sensor_msgs
 	std_srvs
-	custom_interfaces
 )
+
+target_link_libraries(direction_service "${cpp_typesupport_target}")
+target_link_libraries(go_to_pose "${cpp_typesupport_target}")
+
 
 # Add dependencies
 ament_target_dependencies(test_service 
 	rclcpp
 	sensor_msgs
 	std_srvs
-	custom_interfaces
 )
+target_link_libraries(test_service "${cpp_typesupport_target}")
 
 # Install executables
 install(TARGETS 
@@ -68,6 +80,7 @@ install(TARGETS
 	patrol_with_service
 	direction_service
 	test_service
+	go_to_pose
   	DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch rviz

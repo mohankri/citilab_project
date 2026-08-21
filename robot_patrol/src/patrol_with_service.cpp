@@ -5,13 +5,13 @@
 #include "rclcpp/publisher.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/timer.hpp"
+#include "robot_patrol/srv/get_direction.hpp"
 #include "sensor_msgs/msg/detail/laser_scan__struct.hpp"
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdint>
-#include <custom_interfaces/srv/get_direction.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <iterator>
 #include <limits>
@@ -27,16 +27,17 @@ public:
     auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
 
     subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-        //"/fastbot_1/scan", qos,
-        "/scan", qos, // Real Robot
+        "/fastbot_1/scan",
+        //"/scan",
+        qos, // Real Robot
         std::bind(&patrol_with_service::laser_scan_callback, this,
                   std::placeholders::_1));
     publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(
-        //"/fastbot_1/cmd_vel", qos);
-        "/cmd_vel", qos); // Real Robot
+        "/fastbot_1/cmd_vel", qos);
+    //"/cmd_vel", qos); // Real Robot
 
-    client_ = this->create_client<custom_interfaces::srv::GetDirection>(
-        service_name_);
+    client_ =
+        this->create_client<robot_patrol::srv::GetDirection>(service_name_);
 
     // Wait for the service to be available (checks every second)
     while (!client_->wait_for_service(1s)) {
@@ -69,8 +70,7 @@ private:
 
     RCLCPP_INFO(this->get_logger(), "Request Sent");
 
-    auto request =
-        std::make_shared<custom_interfaces::srv::GetDirection::Request>();
+    auto request = std::make_shared<robot_patrol::srv::GetDirection::Request>();
 
     request->laser_data = *last_scan_msg_;
 
@@ -82,12 +82,11 @@ private:
   }
 
   void direction_response_callback(
-      rclcpp::Client<custom_interfaces::srv::GetDirection>::SharedFuture
-          future) {
-
-    RCLCPP_INFO(this->get_logger(), "Response Received");
+      rclcpp::Client<robot_patrol::srv::GetDirection>::SharedFuture future) {
 
     auto response = future.get();
+    RCLCPP_INFO(this->get_logger(), "Response Received %s",
+                response->direction.c_str());
 
     geometry_msgs::msg::Twist cmd;
     cmd.linear.x = 0.1f;
@@ -102,7 +101,7 @@ private:
     publisher_->publish(cmd);
   }
 
-  rclcpp::Client<custom_interfaces::srv::GetDirection>::SharedPtr client_;
+  rclcpp::Client<robot_patrol::srv::GetDirection>::SharedPtr client_;
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscriber_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
 

@@ -13,11 +13,11 @@
 #include <chrono>
 #include <cmath>
 #include <cstdint>
-#include <custom_interfaces/srv/get_direction.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <iterator>
 #include <limits>
 #include <map>
+#include <robot_patrol/srv/get_direction.hpp>
 #include <string>
 
 using namespace std::chrono_literals;
@@ -35,8 +35,8 @@ public:
         std::bind(&test_service::laser_scan_callback, this,
                   std::placeholders::_1));
 
-    client_ = this->create_client<custom_interfaces::srv::GetDirection>(
-        service_name_);
+    client_ =
+        this->create_client<robot_patrol::srv::GetDirection>(service_name_);
 
     // Wait for the service to be available (checks every second)
     while (!client_->wait_for_service(1s)) {
@@ -71,9 +71,11 @@ private:
   }
 
   void send_direction_service_request() {
-    auto request =
-        std::make_shared<custom_interfaces::srv::GetDirection::Request>();
-
+    auto request = std::make_shared<robot_patrol::srv::GetDirection::Request>();
+    if (last_scan_msg_ == nullptr) {
+      RCLCPP_INFO(this->get_logger(), "Laser Scan data not available");
+      return;
+    }
     request->laser_data = *last_scan_msg_;
 
     // Callback fires when the response arrives — no blocking, no second
@@ -85,13 +87,13 @@ private:
   }
 
   void direction_response_callback(
-      rclcpp::Client<custom_interfaces::srv::GetDirection>::SharedFuture
-          future) {
+      rclcpp::Client<robot_patrol::srv::GetDirection>::SharedFuture future) {
     auto response = future.get();
-    RCLCPP_INFO(this->get_logger(), "Response Received");
+    RCLCPP_INFO(this->get_logger(), "Response Received %s",
+                response->direction.c_str());
   }
 
-  rclcpp::Client<custom_interfaces::srv::GetDirection>::SharedPtr client_;
+  rclcpp::Client<robot_patrol::srv::GetDirection>::SharedPtr client_;
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr subscriber_;
   sensor_msgs::msg::LaserScan::SharedPtr last_scan_msg_;
   rclcpp::TimerBase::SharedPtr timer_;
