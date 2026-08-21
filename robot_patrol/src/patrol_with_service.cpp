@@ -27,14 +27,14 @@ public:
     auto qos = rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::Reliable);
 
     subscriber_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-        "/fastbot_1/scan",
-        //"/scan",
+        //"/fastbot_1/scan",
+        "/scan",
         qos, // Real Robot
         std::bind(&patrol_with_service::laser_scan_callback, this,
                   std::placeholders::_1));
     publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(
-        "/fastbot_1/cmd_vel", qos);
-    //"/cmd_vel", qos); // Real Robot
+        //"/fastbot_1/cmd_vel", qos);
+        "/cmd_vel", qos); // Real Robot
 
     client_ =
         this->create_client<robot_patrol::srv::GetDirection>(service_name_);

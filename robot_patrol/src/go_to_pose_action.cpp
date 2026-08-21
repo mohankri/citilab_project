@@ -37,14 +37,14 @@ public:
         std::bind(&GoToPose::handle_cancel, this, _1),
         std::bind(&GoToPose::handle_accepted, this, _1));
 
-#if 1
+#if 0
     odom_sub_ = create_subscription<nav_msgs::msg::Odometry>(
         "/fastbot_1/odom", 10, std::bind(&GoToPose::odom_callback, this, _1));
 
     publisher_ = this->create_publisher<geometry_msgs::msg::Twist>(
         "/fastbot_1/cmd_vel", qos);
 #endif
-#if 0
+#if 1
     odom_sub_ = create_subscription<nav_msgs::msg::Odometry>(
         "/odom", 10, std::bind(&GoToPose::odom_callback, this, _1));
 
