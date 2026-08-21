@@ -121,7 +121,7 @@ private:
   }
 
   // static constexpr float OBSTACLE_THRESHOLD = 0.35f; // meters
-  static constexpr float OBSTACLE_THRESHOLD = 0.30f; // meters
+  static constexpr float OBSTACLE_THRESHOLD = 0.50f; // meters
 
   const std::string service_name_ = "/direction_service";
   rclcpp::Service<robot_patrol::srv::GetDirection>::SharedPtr service_;
